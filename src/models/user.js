@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -29,6 +32,14 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
+    // newpassword: {
+    //   type: String,
+    //   validate(value) {
+    //     if (!validator.isStrongPassword(value)) {
+    //       throw new Error("Not a Strong Password");
+    //     }
+    //   },
+    // },
     age: {
       type: Number,
     },
@@ -58,6 +69,18 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.methods.getJWT = async function () {
+  const user = this;
+  const token = await jwt.sign({ _id: user._id }, "Dev@Tinder$666");
+  return token;
+};
+
+userSchema.methods.validatePassword = async function (password) {
+  const user = this;
+  const isValidPassword = await bcrypt.compare(password, user.password);
+  return isValidPassword;
+};
 
 //userSchema.index({ email: 1 }, { unique: true });
 // userSchema.index({ firstName: 1 }, { unique: true });
